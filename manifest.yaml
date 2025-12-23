@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: main-application
+    labels:
+        app.kubernetes.io/name: main-application
+        app.kubernetes.io/part-of: pt3
+        environment: dev
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app.kubernetes.io/name: main-application
+            app.kubernetes.io/part-of: pt3
+            environment: dev
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: main-application
+                app.kubernetes.io/part-of: pt3
+                environment: dev
+        spec:
+            containers:
+                - name: main-app
+                  image: wil42/playground:v1
+                  # https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+                  ports:
+                      - containerPort: 8888
+                        name: main-app-port
+---
+# this is the service to expose the node to the cluster
+apiVersion: v1
+kind: Service
+metadata:
+    name: main-app-svc
+    labels:
+        app.kubernetes.io/part-of: pt3
+spec:
+    type: ClusterIP
+    selector:
+        app.kubernetes.io/name: main-application
+        app.kubernetes.io/part-of: pt3-main-application
+        environment: dev
+    ports:
+        - protocol: TCP
+          port: 8080
+          targetPort: main-app-port
